@@ -121,4 +121,4 @@ async def kill(ctx, user: discord.Member = None):
         await ctx.send(embed=embed)
 
 
-bot.run(os.getenv("token_dev"))   
+bot.run(os.getenv("token_main"))  
