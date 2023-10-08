@@ -1,4 +1,0 @@
-MuddyBot Changelog:
-
-1.3:
-- Added 3 more death messages
