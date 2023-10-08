@@ -86,25 +86,39 @@ async def invite(ctx):
 
 @bot.command()
 async def kill(ctx, user: discord.Member = None):
-    print(f"{ctx.author} Invoked the kill command")
     rand_kill_lst = [
-    "<@USER> flew too close to the sun.",
-    "<@USER> picked a fight with buddy and brought down the wrath of ChE upon themselves.",
-    "<@USER> mocked Rizzy. Big mistake.",
-    f"The pxls mods found <@USER>'s {random.randrange(1, 51)} alts.",
-    "<@USER> posted cringe and got banned :nerd: :nerd:"
+    "<@target> picked a fight with buddy and brought down the wrath of ChE upon themselves.",
+    "<@target> mocked Rizzy. Big mistake.",
+    f"The pxls mods found <@target>'s {random.randrange(1, 51)} alts.",
+    "<@target> posted cringe and got banned :nerd: :nerd:",
+    "<@target> didn't place 50k pixels by the end of the canvas.",
+    "Uh oh, looks like target> forgot to place for opcellog.",
+    "<@target> got Lainpilled.",
+    "<@target> drank too much pineapple juice.",
+    "<@target> took a whiff of Liam's socks and dropped dead on the spot.",
+    "<@target> stopped placing for the Chromatic Empire.",
+    "Turns out <@target> didn't post in https://discord.com/channels/954714002217398342/983032616380940368 today...",
+    "<@target> got taken out by NSIA agents. Wait, did you hear anything?",
+    "<@target> unfollowed @chromatic.zone on Bluesky.",
+    f"<@target> got stabbed in a back ally by {ctx.author.mention}.",
+    f"<@target> got shot by {ctx.author.mention}'s seventh bullet from their six-shooter.",
+    "<@target> got blinded by the new moon. :new_moon:"
 ]
+    
     if user is None:
         await ctx.send("Please mention a valid user to kill.")
     elif user == ctx.author:
         await ctx.send("You can't kill yourself!")
     else:
-        try:
-            rand_kill = random.choice(rand_kill_lst)
-            rand_kill_mention = rand_kill.replace("<@USER>", f"<@{user.id}>")
-            await ctx.send(rand_kill_mention)
-        except discord.NotFound:
-            await ctx.send("Please mention a valid user to kill.")
+        rand_kill = random.choice(rand_kill_lst)
+        rand_kill_mention = rand_kill.replace("<@target>", f"{user.mention}")
+        embed = discord.Embed(
+            description=f"{user.mention} has been killed by {ctx.author.mention}!",
+            color = discord.Color.greyple()
+        )
+        embed.add_field(name="", value=rand_kill_mention, inline=False)
+        
+        await ctx.send(embed=embed)
 
 
-bot.run(os.getenv("token_main"))
+bot.run(os.getenv("token_dev"))   
