@@ -117,7 +117,7 @@ async def kill(ctx, user: discord.Member = None):
     "<@USER> didn't participate in ChE Game Night",
     "<@USER> posted a meme in #general",
     "<@USER> isn't a part of Watermelon Province",
-    f"Oops! In {ctx.author.mention}'s attempt to kill <@USER>, they slipped on a banana peel and was dead before hitting the ground",
+    f"Oops! In {ctx.author.mention}'s attempt to kill <@USER>, they slipped on a banana peel and were dead before hitting the ground",
     f"Oops! {ctx.author.mention} forgot which drink they poisoned and drank the wrong one",
     f"Zamn, it looks like {ctx.author.mention} dropped the dynamite at their own feet"
 ]
