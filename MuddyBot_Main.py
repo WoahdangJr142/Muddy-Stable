@@ -18,7 +18,7 @@ load_dotenv()
 bot.help_command=None
 
 bot_owner = [621481279132663828]
-power_users = [839138084712873984, 313264660826685440]
+power_users = [839138084712873984, 313264660826685440, 398912653491437573]
 
 
 #Startup confirmation message
