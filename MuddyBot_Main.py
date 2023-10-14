@@ -3,69 +3,85 @@ import os
 import sys
 import subprocess
 import random
+import validators
 from dotenv import load_dotenv
 from discord.ext import commands
+from discord import default_permissions
+
 
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix=';', intents=intents)
-intents.message_content = True
+intents.members = True
+bot = commands.Bot(intents=intents)
+
 load_dotenv()
 
 bot.help_command=None
 
 bot_owner = [621481279132663828]
-power_users = []
+power_users = [839138084712873984, 313264660826685440]
+
 
 #Startup confirmation message
 @bot.event
 async def on_ready():
     print(f'{bot.user} has connected to Discord! Version {discord.__version__}')
+    #print(dict(discord.Intents.default()))
 
-#Command not recognized handling
+
+@bot.event
+async def on_guild_join(guild):
+    print(f'Joined a new guild: {guild.name} (ID: `{guild.id}`)')
+
+
+@bot.event
+async def on_guild_remove(guild):
+    print(f'Removed from a guild: {guild.name} (ID: {guild.id})')
+
+
 @bot.event
 async def on_command_error(ctx, error):
     print(f"Error in command {ctx.command}: {error}")
-    if isinstance(error, commands.CommandNotFound):
-        await ctx.reply(f"Sorry, I don't recognize that command. Type `{bot.command_prefix}help` for a list of available commands.")
-    elif isinstance(error, commands.CommandOnCooldown):
-        await ctx.reply(f"Command on cooldown. Try again in {error.retry_after:.2f} seconds.")
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.respond(f"Command on cooldown. Try again in {error.retry_after:.2f} seconds.")
 
 
 # Basic ping command. Responds with "Pong! <Latency in ms>"
-@bot.command()
+@bot.slash_command(description="Returns the average ping in ms of the bot.")
 @commands.cooldown(3, 5, commands.BucketType.user)
 async def ping(ctx):
-    await ctx.reply('Pong! `{0} ms`'.format(round(bot.latency * 1000, 2)))
+    await ctx.respond('Pong! `{0} ms`'.format(round(bot.latency * 1000, 2)))
 
 
 # Gracefully restarts the bot
-@bot.command()
-async def restart(ctx):
+@bot.slash_command(description="Restart the bot")
+async def restart(ctx) -> None:
     # Check if the user invoking the command is in the allowed list
     if ctx.author.id in bot_owner or ctx.author.id in power_users:
-        await ctx.reply('Restarting...')
+        await ctx.respond('Restarting...', ephemeral=True)
         subprocess.Popen(['python', 'restart_bot.py'])  # Start the restart script
         await bot.close()  # Close the bot gracefully
     else:
-        await ctx.reply('You do not have permission to restart the bot.')
+        await ctx.respond('You do not have permission to restart the bot.', ephemeral=True)
 
 #Safely stops the bot
-@bot.command()
+@bot.slash_command()
 async def stop(ctx):
     if ctx.author.id in bot_owner or ctx.author.id in power_users:
-        await ctx.reply("Shutting Down")
+        await ctx.respond("Shutting Down", ephemeral=True)
         await bot.close()
         await sys.exit()
     else:
-        await ctx.reply("You do not have permission to shut down the bot.")
+        await ctx.respond("You do not have permission to shut down the bot.", ephemeral=True)
 
+
+'''
 #Send a list of all commands !!MUST MANUALLY EDIT!!
-@bot.command()
+@bot.slash_command(description="Gives you a list of all commands and what they do, as well as any arguments that can be given.")
 @commands.cooldown(3, 5, commands.BucketType.user)
 async def help(ctx):
     embed = discord.Embed(
         title="Help",
-        description="Gives you a list of all commands and what they do, as well as any arguments that can be given.",
+        description="A list of all commands and what they do, as well as any arguments that can be given.",
         color=discord.Color.green()
     )
 
@@ -74,10 +90,11 @@ async def help(ctx):
     embed.add_field(name="Important Links :link:", value=f"```{bot.command_prefix}links\nGives different invite links with various functions.```", inline=False)
     embed.add_field(name="Kill :skull:", value=f"```{bot.command_prefix}kill\nKill a user with a random death message.\nargs: user```", inline=False)
 
-    await ctx.reply(embed=embed)
+    await ctx.respond(embed=embed)
+'''
 
-#Send an invite to Watermelon Province
-@bot.command()
+
+@bot.slash_command(description="A list of important links.")
 async def links(ctx):
     embed = discord.Embed(
         title="**Important Links**",
@@ -88,11 +105,12 @@ async def links(ctx):
     embed.add_field(name="**The Chromatic Empire**", value="[Website](https://chromatic.zone)\n[Discord](https://discord.gg/Hb4gtWseBb)\n[Wiki](https://wiki.pxls.space/index.php?title=Chromatic_Empire)\n[Reddit](https://www.reddit.com/r/chromatic/)\n[Twitter/X](https://twitter.com/chromaticzone)\n[Bluesky](https://bsky.app/profile/chromatic.zone)", inline=False)
     embed.add_field(name="**Misc**", value="[Github](https://github.com/WoahdangJr142/MuddyBot/tree/main)")
 
-    await ctx.reply(embed=embed)
+    await ctx.respond(embed=embed)
 
-@bot.command()
+
+@bot.slash_command(description="Kill the specified user")
 @commands.cooldown(3, 5, commands.BucketType.user)
-async def kill(ctx, user: discord.Member = None):
+async def kill(ctx, user: discord.User):
     rand_kill_lst = [
     "<@USER> picked a fight with buddy and brought down the wrath of ChE upon themselves",
     "<@USER> mocked Rizzy - big mistake",
@@ -122,23 +140,52 @@ async def kill(ctx, user: discord.Member = None):
     f"Zamn, it looks like {ctx.author.mention} dropped the dynamite at their own feet"
 ]
     
-    if user is None:
-        await ctx.reply("Please mention a valid user to kill.")
-    elif user == ctx.author:
-        await ctx.reply("You can't kill yourself!")
+    if user == ctx.author:
+        await ctx.respond("You can't kill yourself!")
     else:
         rand_kill = random.choice(rand_kill_lst)
         rand_kill_mention = rand_kill.replace("<@USER>", f"{user.mention}")
         embed = discord.Embed(
-            #description=f"**{user.mention} has been killed by {ctx.author.mention}!**",
             color = discord.Color.greyple()
         )
         embed.add_field(name="", value=rand_kill_mention, inline=False)
         
-        await ctx.reply(embed=embed)
+        await ctx.respond(embed=embed)
 
-#@bot.command()
-#async def test(ctx):
-#    await ctx.reply(f"<@USER> didn't place {random.randrange(1, 21)}.{random.randrange(1, 10)}k pixels by the end of the canvas")
+
+@bot.slash_command(description="DM all valid members for a military operation.")
+async def operation(ctx, role: discord.Role, *, message, operation_type=None, template_link=None, image=None):
+    successful = []
+    failed = []
+
+    # Check if template_link and image are valid URLs
+    if template_link and not validators.url(template_link):
+        await ctx.respond(f"Invalid URL provided for template_link: {template_link}", ephemeral=True)
+        pass
+    if image and not validators.url(image):
+        await ctx.respond(f"Invalid URL provided for image: {image}", ephemeral=True)
+        pass
+
+    embed=discord.Embed(
+        title="Military Operation!",
+        color = discord.Color.dark_gold()
+    )
+    embed.set_thumbnail(url=image)
+    embed.add_field(name="Template Link", value=template_link, inline=False)
+    embed.add_field(name=f"{operation_type}", value=f"{message}", inline=False)
+
+    if ctx.author.id in bot_owner or ctx.author.id in power_users:
+        for member in role.members:
+            if member.bot or member==ctx.author:
+                continue
+            try:
+                await member.send(embed=embed)
+                successful.append(member.mention)
+            except Exception as error:
+                print(error)
+                await ctx.author.send(f"Couldn't DM {member}.\nReason: {error}")
+                failed.append(member.mention)
+
+        await ctx.respond(f'Success! "{message}" sent to {successful}.\nFailed to send to {failed}.\nPreview:', embed=embed, ephemeral=True)
 
 bot.run(os.getenv("token_main"))
