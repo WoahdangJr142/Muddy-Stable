@@ -154,38 +154,46 @@ async def kill(ctx, user: discord.User):
 
 
 @bot.slash_command(description="DM all valid members for a military operation.")
-async def operation(ctx, role: discord.Role, *, message, operation_type=None, template_link=None, image=None):
+async def operation(ctx, role: discord.Role, *, message, template_link, operation_type, image=None):
     successful = []
     failed = []
+    should_send=True
 
     # Check if template_link and image are valid URLs
     if template_link and not validators.url(template_link):
         await ctx.respond(f"Invalid URL provided for template_link: {template_link}", ephemeral=True)
+        should_send=False
         pass
     if image and not validators.url(image):
         await ctx.respond(f"Invalid URL provided for image: {image}", ephemeral=True)
+        should_send=False
         pass
 
     embed=discord.Embed(
         title="Military Operation!",
         color = discord.Color.dark_gold()
     )
-    embed.set_thumbnail(url=image)
+    if image is not None:
+        embed.set_thumbnail(url=image)
     embed.add_field(name="Template Link", value=template_link, inline=False)
     embed.add_field(name=f"{operation_type}", value=f"{message}", inline=False)
 
-    if ctx.author.id in bot_owner or ctx.author.id in power_users:
-        for member in role.members:
-            if member.bot or member==ctx.author:
-                continue
-            try:
-                await member.send(embed=embed)
-                successful.append(member.mention)
-            except Exception as error:
-                print(error)
-                await ctx.author.send(f"Couldn't DM {member}.\nReason: {error}")
-                failed.append(member.mention)
+    if should_send==True:
+        if ctx.author.id in bot_owner or ctx.author.id in power_users:
+            for member in role.members:
+                if member.bot:# or member==ctx.author:
+                    continue
+                try:
+                    await member.send(embed=embed)
+                    successful.append(member.mention)
+                except Exception as error:
+                    print(error)
+                    await ctx.author.send(f"Couldn't DM {member}.\nReason: {error}")
+                    failed.append(member.mention)
 
-        await ctx.respond(f'Success! "{message}" sent to {successful}.\nFailed to send to {failed}.\nPreview:', embed=embed, ephemeral=True)
+            await ctx.respond(f'Success! "{message}" sent to {successful}.\nFailed to send to {failed}.\nPreview:', embed=embed, ephemeral=True)
+        else:
+            await ctx.respond("You do not have permission to run this command.", ephemeral=True)
+
 
 bot.run(os.getenv("token_main"))
