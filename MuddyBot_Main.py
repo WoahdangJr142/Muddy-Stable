@@ -4,6 +4,7 @@ import sys
 import subprocess
 import random
 import validators
+from funclib import *
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord import default_permissions
@@ -205,10 +206,10 @@ async def count_members_in_role(ctx, role: discord.Role):
     await ctx.respond(f"There are {count} members that have the role {role.mention}.", ephemeral=True)
 
 
-@tasks.loop(hours=1)
+@tasks.loop(minutes=random.randrange(20, 61))
 async def muddy_chain():
     channel=bot.get_channel(983032616380940368)
-    await channel.send("<:muddy:1017260706384588881>")
+    await channel.send(random_emoji())
 
 
 bot.run(os.getenv("token_main"))
