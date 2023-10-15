@@ -196,4 +196,12 @@ async def operation(ctx, role: discord.Role, *, message, template_link, operatio
             await ctx.respond("You do not have permission to run this command.", ephemeral=True)
 
 
+@bot.slash_command(name="count_members_in_role")
+async def count_members_in_role(ctx, role: discord.Role):
+    count=0
+    for member in role.members:
+        count=count+1
+    await ctx.respond(f"There are {count} members that have the role {role.mention}.", ephemeral=True)
+
+
 bot.run(os.getenv("token_main"))
