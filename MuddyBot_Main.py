@@ -7,6 +7,7 @@ import validators
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord import default_permissions
+from discord.ext import tasks
 
 
 intents = discord.Intents.default()
@@ -25,7 +26,7 @@ power_users = [839138084712873984, 313264660826685440, 398912653491437573]
 @bot.event
 async def on_ready():
     print(f'{bot.user} has connected to Discord! Version {discord.__version__}')
-    #print(dict(discord.Intents.default()))
+    muddy_chain.start()
 
 
 @bot.event
@@ -202,6 +203,12 @@ async def count_members_in_role(ctx, role: discord.Role):
     for member in role.members:
         count=count+1
     await ctx.respond(f"There are {count} members that have the role {role.mention}.", ephemeral=True)
+
+
+@tasks.loop(hours=1)
+async def muddy_chain():
+    channel=bot.get_channel(983032616380940368)
+    await channel.send("<:muddy:1017260706384588881>")
 
 
 bot.run(os.getenv("token_main"))
