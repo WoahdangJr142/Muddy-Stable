@@ -206,7 +206,7 @@ async def count_members_in_role(ctx, role: discord.Role):
     await ctx.respond(f"There are {count} members that have the role {role.mention}.", ephemeral=True)
 
 
-@tasks.loop(minutes=random.randrange(20, 61))
+@tasks.loop(hours=3)
 async def muddy_chain():
     channel=bot.get_channel(983032616380940368)
     await channel.send(random_emoji())
